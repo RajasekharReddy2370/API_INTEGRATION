@@ -4,50 +4,27 @@ from rest_framework.response import Response
 from rest_framework import status
 import requests
 
+import requests
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 class place_order_t(APIView):
     def post(self, request):
         try:
-            # Extract data from the request
-            matter = request.data.get("matter")
-            order_type = request.data.get("type")
-            total_weight_kg = request.data.get("total_weight_kg")
-            points = request.data.get("points", [])
-
-
-            # Define the URL and headers for the API call
-            # TEST
+            payload = request.data
             url = "https://robotapitest-in.borzodelivery.com/api/business/1.6/create-order"
-            # PROD
-            # url = "https://robot-in.borzodelivery.com/api/business/1.6/create-order"
-
             headers = {
-                # TEST
                 'X-DV-Auth-Token': '370561FC3C82DB38C83E65467A8D2429CC3D8E75',
-                # PROD
-                # 'X-DV-Auth-Token': '9B4A84BBEC57ED51BED5C8D44E06BF4ED9C0FDD4',
                 'Content-Type': 'application/json'
             }
-
-            # Prepare the payload with dynamic values
-            payload = {
-                "matter": matter,
-                "type": order_type,
-                "total_weight_kg": total_weight_kg,
-                "points": points,
-            }
-
-            # Perform the HTTP POST request to the external API
             response = requests.post(url, headers=headers, json=payload)
-
-            # Convert the response to JSON format
+            response.raise_for_status()  # Will raise an HTTPError for bad responses
             response_data = response.json()
-
-            # Extract relevant fields from the response
             result = {
                 "is_successful": response_data.get("is_successful"),
                 "order": {}
             }
-
             if response_data.get("order"):
                 order = response_data["order"]
                 result["order"] = {
@@ -55,7 +32,6 @@ class place_order_t(APIView):
                     "payment_amount": order.get("payment_amount"),
                     "points": []
                 }
-
                 for point in order.get("points", []):
                     point_details = {
                         "address": point.get("address"),
@@ -66,67 +42,30 @@ class place_order_t(APIView):
                         "tracking_url": point.get("tracking_url"),
                     }
                     result["order"]["points"].append(point_details)
-
-                # Return the structured response
-                return Response(result, status=status.HTTP_200_OK)
-
+            return Response(result, status=status.HTTP_200_OK)
         except requests.exceptions.RequestException as e:
             # Handle any errors with the request to the external API
             return Response({"error": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
-
         except Exception as e:
             # Handle any other exceptions
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
 class place_order_p(APIView):
-    # Restrict the view to handle only POST requests
-    # http_method_names = ['post']
     def post(self, request):
         try:
-            # Extract data from the request
-            matter = request.data.get("matter")
-            order_type = request.data.get("type")
-            total_weight_kg = request.data.get("total_weight_kg")
-            points = request.data.get("points", [])
-            payment_method = request.data.get("payment_method")
-
-
-            # Define the URL and headers for the API call
-            # TEST
-            # url = "https://robotapitest-in.borzodelivery.com/api/business/1.6/create-order"
-            # PROD
+            payload = request.data
             url = "https://robot-in.borzodelivery.com/api/business/1.6/create-order"
-
             headers = {
-                # TEST
-                # 'X-DV-Auth-Token': '370561FC3C82DB38C83E65467A8D2429CC3D8E75',
-                # PROD
                 'X-DV-Auth-Token': '9B4A84BBEC57ED51BED5C8D44E06BF4ED9C0FDD4',
                 'Content-Type': 'application/json'
             }
-
-            # Prepare the payload with dynamic values
-            payload = {
-                "matter": matter,
-                "type": order_type,
-                "total_weight_kg": total_weight_kg,
-                "points": points,
-                "payment_method":payment_method
-            }
-
-            # Perform the HTTP POST request to the external API
             response = requests.post(url, headers=headers, json=payload)
-
-            # Convert the response to JSON format
+            response.raise_for_status()  # Will raise an HTTPError for bad responses
             response_data = response.json()
-
-            # Extract relevant fields from the response
             result = {
                 "is_successful": response_data.get("is_successful"),
                 "order": {}
             }
-
             if response_data.get("order"):
                 order = response_data["order"]
                 result["order"] = {
@@ -134,7 +73,6 @@ class place_order_p(APIView):
                     "payment_amount": order.get("payment_amount"),
                     "points": []
                 }
-
                 for point in order.get("points", []):
                     point_details = {
                         "address": point.get("address"),
@@ -145,17 +83,206 @@ class place_order_p(APIView):
                         "tracking_url": point.get("tracking_url"),
                     }
                     result["order"]["points"].append(point_details)
-
-                # Return the structured response
-                return Response(result, status=status.HTTP_200_OK)
-
+            return Response(result, status=status.HTTP_200_OK)
         except requests.exceptions.RequestException as e:
             # Handle any errors with the request to the external API
             return Response({"error": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
-
         except Exception as e:
             # Handle any other exceptions
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class price(APIView):
+    def post(self,request):
+        try:
+            payload = request.data
+            url = "https://robotapitest-in.borzodelivery.com/api/business/1.6/calculate-order"
+            headers = {
+                'X-DV-Auth-Token': '370561FC3C82DB38C83E65467A8D2429CC3D8E75',
+                'Content-Type': 'application/json'
+            }
+            response = requests.post(url, headers=headers, json=payload)
+            response_data = response.json()
+            result = {
+                "is_successful": response_data.get("is_successful"),
+                "order": {}
+            }
+            if response_data.get("order"):
+                order = response_data["order"]
+                result["order"] = {
+                    "order_id": order.get("order_id"),
+                    "payment_amount": order.get("payment_amount"),
+                    "points": []
+                }
+                for point in order.get("points", []):
+                    point_details = {
+                        "address": point.get("address"),
+                        "contact_person": {
+                            "name": point.get("contact_person", {}).get("name"),
+                            "phone": point.get("contact_person", {}).get("phone")
+                        },
+                        # "tracking_url": point.get("tracking_url"),
+                    }
+                    result["order"]["points"].append(point_details)
+            return Response(result, status=status.HTTP_200_OK)
+        except requests.exceptions.RequestException as e:
+            # Handle any errors with the request to the external API
+            return Response({"error": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+        except Exception as e:
+            # Handle any other exceptions
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# class place_order_t(APIView):
+#     def post(self, request):
+#         try:
+#             # Extract data from the request
+#             matter = request.data.get("matter")
+#             order_type = request.data.get("type")
+#             total_weight_kg = request.data.get("total_weight_kg")
+#             points = request.data.get("points", [])
+#
+#
+#             # Define the URL and headers for the API call
+#             # TEST
+#             url = "https://robotapitest-in.borzodelivery.com/api/business/1.6/create-order"
+#             # PROD
+#             # url = "https://robot-in.borzodelivery.com/api/business/1.6/create-order"
+#
+#             headers = {
+#                 # TEST
+#                 'X-DV-Auth-Token': '370561FC3C82DB38C83E65467A8D2429CC3D8E75',
+#                 # PROD
+#                 # 'X-DV-Auth-Token': '9B4A84BBEC57ED51BED5C8D44E06BF4ED9C0FDD4',
+#                 'Content-Type': 'application/json'
+#             }
+#
+#             # Prepare the payload with dynamic values
+#             payload = {
+#                 "matter": matter,
+#                 "type": order_type,
+#                 "total_weight_kg": total_weight_kg,
+#                 "points": points,
+#             }
+#
+#             # Perform the HTTP POST request to the external API
+#             response = requests.post(url, headers=headers, json=payload)
+#
+#             # Convert the response to JSON format
+#             response_data = response.json()
+#
+#             # Extract relevant fields from the response
+#             result = {
+#                 "is_successful": response_data.get("is_successful"),
+#                 "order": {}
+#             }
+#
+#             if response_data.get("order"):
+#                 order = response_data["order"]
+#                 result["order"] = {
+#                     "order_id": order.get("order_id"),
+#                     "payment_amount": order.get("payment_amount"),
+#                     "points": []
+#                 }
+#
+#                 for point in order.get("points", []):
+#                     point_details = {
+#                         "address": point.get("address"),
+#                         "contact_person": {
+#                             "name": point.get("contact_person", {}).get("name"),
+#                             "phone": point.get("contact_person", {}).get("phone")
+#                         },
+#                         "tracking_url": point.get("tracking_url"),
+#                     }
+#                     result["order"]["points"].append(point_details)
+#
+#                 # Return the structured response
+#                 return Response(result, status=status.HTTP_200_OK)
+#
+#         except requests.exceptions.RequestException as e:
+#             # Handle any errors with the request to the external API
+#             return Response({"error": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+#
+#         except Exception as e:
+#             # Handle any other exceptions
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# class place_order_p(APIView):
+#     # Restrict the view to handle only POST requests
+#     # http_method_names = ['post']
+#     def post(self, request):
+#         try:
+#             # Extract data from the request
+#             matter = request.data.get("matter")
+#             order_type = request.data.get("type")
+#             total_weight_kg = request.data.get("total_weight_kg")
+#             points = request.data.get("points", [])
+#             payment_method = request.data.get("payment_method")
+#
+#
+#             # Define the URL and headers for the API call
+#             # TEST
+#             # url = "https://robotapitest-in.borzodelivery.com/api/business/1.6/create-order"
+#             # PROD
+#             url = "https://robot-in.borzodelivery.com/api/business/1.6/create-order"
+#
+#             headers = {
+#                 # TEST
+#                 # 'X-DV-Auth-Token': '370561FC3C82DB38C83E65467A8D2429CC3D8E75',
+#                 # PROD
+#                 'X-DV-Auth-Token': '9B4A84BBEC57ED51BED5C8D44E06BF4ED9C0FDD4',
+#                 'Content-Type': 'application/json'
+#             }
+#
+#             # Prepare the payload with dynamic values
+#             payload = {
+#                 "matter": matter,
+#                 "type": order_type,
+#                 "total_weight_kg": total_weight_kg,
+#                 "points": points,
+#                 "payment_method":payment_method
+#             }
+#
+#             # Perform the HTTP POST request to the external API
+#             response = requests.post(url, headers=headers, json=payload)
+#
+#             # Convert the response to JSON format
+#             response_data = response.json()
+#
+#             # Extract relevant fields from the response
+#             result = {
+#                 "is_successful": response_data.get("is_successful"),
+#                 "order": {}
+#             }
+#
+#             if response_data.get("order"):
+#                 order = response_data["order"]
+#                 result["order"] = {
+#                     "order_id": order.get("order_id"),
+#                     "payment_amount": order.get("payment_amount"),
+#                     "points": []
+#                 }
+#
+#                 for point in order.get("points", []):
+#                     point_details = {
+#                         "address": point.get("address"),
+#                         "contact_person": {
+#                             "name": point.get("contact_person", {}).get("name"),
+#                             "phone": point.get("contact_person", {}).get("phone")
+#                         },
+#                         "tracking_url": point.get("tracking_url"),
+#                     }
+#                     result["order"]["points"].append(point_details)
+#
+#                 # Return the structured response
+#                 return Response(result, status=status.HTTP_200_OK)
+#
+#         except requests.exceptions.RequestException as e:
+#             # Handle any errors with the request to the external API
+#             return Response({"error": str(e)}, status=status.HTTP_502_BAD_GATEWAY)
+#
+#         except Exception as e:
+#             # Handle any other exceptions
+#             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class price(APIView):
